@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adriano Parmentola — Service Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ─── 2 TONI + 1 ACCENTO ─────────────────────────────── */
+:root {
+  --p: #F4EFE6;        /* carta */
+  --i: #17120F;        /* inchiostro */
+  --a: #B85C2A;        /* terracotta — unico accento */
+  --pm: rgba(23,18,15,.08);   /* regola sottile su carta */
+  --im: rgba(244,239,230,.08);/* regola sottile su scuro */
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--p);
+  color: var(--i);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  cursor: none;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+
+/* ─── CURSOR ──────────────────────────────────────────── */
+#cur {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--a); position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 9999;
+  transition: transform .15s;
+}
+#cur.big { transform: scale(3); }
+
+/* ─── NAV ─────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: var(--i); height: 54px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 1px solid rgba(244,239,230,.07);
+}
+.nav-brand { display: flex; align-items: center; gap: 12px; color: var(--p); }
+.nav-name { font-family: 'EB Garamond', serif; font-size: 16px; }
+.nav-links { display: flex; gap: 28px; list-style: none; }
+.nav-links a {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(244,239,230,.4); transition: color .15s;
+}
+.nav-links a:hover { color: var(--p); }
+.nav-cta {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  border: 1px solid var(--a); padding: 7px 16px;
+  background: transparent; color: var(--p); cursor: none; transition: all .15s;
+}
+.nav-cta:hover { background: var(--a); }
+
+/* ─── SEZ HEAD ────────────────────────────────────────── */
+.sh {
+  background: var(--i); padding: 11px 40px;
+  display: flex; align-items: baseline; gap: 14px;
+  border-top: 1px solid rgba(244,239,230,.06);
+  border-bottom: 1px solid rgba(244,239,230,.06);
+}
+.sh-n { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--a); }
+.sh-t { font-family: 'EB Garamond', serif; font-size: 13px; color: rgba(244,239,230,.5); }
+.sh-l { flex: 1; height: .5px; background: rgba(244,239,230,.07); }
+.sh-s { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(244,239,230,.25); }
+
+/* ─── HERO ────────────────────────────────────────────── */
+#hero {
+  min-height: 100vh; padding-top: 54px;
+  background: var(--i);
+  display: grid; grid-template-columns: 1fr 1fr;
+  position: relative; overflow: hidden;
+}
+/* Checker subtile */
+#hero::before {
+  content: ''; position: absolute; inset: 0; z-index: 0;
+  background-image: repeating-conic-gradient(rgba(244,239,230,.03) 0% 25%, transparent 0% 50%);
+  background-size: 22px 22px; pointer-events: none;
+}
+.h-l {
+  padding: 72px 40px 56px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-right: 1px solid var(--im);
+  position: relative; z-index: 1;
+}
+.h-over {
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--a); margin-bottom: 32px;
+  opacity: 0; animation: su .6s .3s forwards;
+}
+.h-nome {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(58px, 8vw, 108px);
+  font-weight: 400; line-height: .88; letter-spacing: -.03em;
+  color: var(--p);
+  opacity: 0; animation: su .8s .42s forwards;
+}
+.h-nome em { font-style: italic; color: rgba(244,239,230,.5); display: block; }
+.h-ruolo {
+  margin-top: 40px; font-size: 12px; line-height: 1.9;
+  color: rgba(244,239,230,.45); max-width: 380px;
+  border-left: 1.5px solid var(--a); padding-left: 18px;
+  opacity: 0; animation: su .6s .55s forwards;
+}
+.h-bottom {
+  margin-top: 56px; display: flex; align-items: flex-end; justify-content: space-between;
+  opacity: 0; animation: su .5s .7s forwards;
+}
+.h-meta { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: rgba(244,239,230,.25); line-height: 2; }
+.h-meta b { color: rgba(244,239,230,.5); font-weight: 400; }
+.h-scroll { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(244,239,230,.2); }
+.h-r {
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+  padding: 72px 40px 56px;
+  opacity: 0; animation: su .9s .5s forwards;
+}
+@keyframes su {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── MANIFESTO ───────────────────────────────────────── */
+#manifesto {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--i);
+}
+.m-l {
+  padding: 64px 40px;
+  border-right: 1px solid var(--pm);
+}
+.m-label {
+  font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--a); margin-bottom: 22px;
+}
+.m-testo {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(22px, 3vw, 36px); font-weight: 400; line-height: 1.2;
+}
+.m-testo em { font-style: italic; color: var(--a); }
+.m-r { padding: 64px 40px; display: flex; align-items: center; }
+.m-en {
+  font-size: 12px; line-height: 1.95; color: rgba(23,18,15,.55);
+  border-left: 1.5px solid var(--a); padding-left: 20px;
+}
+
+/* ─── FEATURE HUM.US ──────────────────────────────────── */
+#feature {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--i);
+  background: var(--i);
+}
+.f-img {
+  position: relative; overflow: hidden; min-height: 460px;
+  display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--im);
+}
+.f-img::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: repeating-conic-gradient(rgba(244,239,230,.04) 0% 25%, transparent 0% 50%);
+  background-size: 22px 22px;
+}
+.f-img-txt { position: relative; z-index: 1; text-align: center; }
+.f-img-t {
+  font-family: 'EB Garamond', serif;
+  font-size: 88px; font-style: italic; font-weight: 400; line-height: .9;
+  letter-spacing: -.04em; color: var(--p);
+}
+.f-img-t span { color: rgba(244,239,230,.2); }
+.f-img-sub {
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+  color: rgba(244,239,230,.2); margin-top: 18px;
+}
+.f-body {
+  padding: 56px 40px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.f-label { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--a); margin-bottom: 14px; }
+.f-title {
+  font-family: 'EB Garamond', serif;
+  font-size: clamp(40px, 6vw, 76px); font-weight: 400; line-height: .9;
+  letter-spacing: -.03em; color: var(--p);
+}
+.f-title em { font-style: italic; color: rgba(244,239,230,.4); }
+.f-desc { font-size: 12px; line-height: 1.85; color: rgba(244,239,230,.45); margin-top: 18px; }
+.f-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 22px; }
+.f-tag {
+  font-size: 9px; letter-spacing: .07em; text-transform: uppercase;
+  border: .5px solid rgba(184,92,42,.4); color: rgba(184,92,42,.8); padding: 3px 7px;
+}
+.f-kpi {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+  background: var(--im); margin-top: 28px;
+}
+.kpi { background: rgba(23,18,15,.5); padding: 18px 16px; }
+.kn { font-family: 'EB Garamond', serif; font-size: 34px; color: var(--p); line-height: 1; }
+.kl { font-size: 10px; color: rgba(244,239,230,.3); margin-top: 5px; line-height: 1.4; }
+
+/* ─── PROGETTI ────────────────────────────────────────── */
+.proj-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  background: var(--i); border-bottom: 1px solid var(--i);
+}
+.proj {
+  background: var(--p); border-right: 1px solid var(--i); border-bottom: 1px solid var(--i);
+  display: flex; flex-direction: column; cursor: none; transition: background .15s;
+}
+.proj:hover { background: #EDE5D5; }
+.proj:nth-child(3n) { border-right: none; }
+.proj-thumb {
+  height: 190px; background: var(--i); position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Checker pattern su ogni thumbnail */
+.proj-thumb::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: repeating-conic-gradient(rgba(244,239,230,.04) 0% 25%, transparent 0% 50%);
+  background-size: 18px 18px;
+}
+.proj-chip {
+  width: 56px; height: 56px; background: var(--p);
+  display: flex; align-items: center; justify-content: center; position: relative; z-index: 1;
+}
+.proj-anno {
+  position: absolute; bottom: 11px; right: 13px; z-index: 1;
+  font-family: 'EB Garamond', serif; font-size: 20px;
+  color: rgba(244,239,230,.18);
+}
+.proj-body { padding: 18px 20px 20px; flex: 1; display: flex; flex-direction: column; }
+.proj-cat { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--a); margin-bottom: 7px; }
+.proj-nome { font-family: 'EB Garamond', serif; font-size: 24px; font-weight: 400; line-height: 1.05; }
+.proj-desc { font-size: 11px; line-height: 1.65; color: rgba(23,18,15,.5); margin-top: 9px; flex: 1; }
+.proj-foot { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 14px; }
+.proj-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.ptag { font-size: 9px; letter-spacing: .04em; text-transform: uppercase; border: .5px solid var(--a); color: var(--a); padding: 2px 5px; }
+.proj-arr { font-size: 14px; color: rgba(23,18,15,.3); transition: transform .15s; }
+.proj:hover .proj-arr { transform: translateX(4px); }
+
+/* ─── PERCORSO ────────────────────────────────────────── */
+#percorso { display: grid; grid-template-columns: 260px 1fr; border-bottom: 1px solid var(--i); }
+.perc-l {
+  padding: 56px 40px; background: var(--i);
+  border-right: 1px solid var(--im);
+}
+.perc-titolo { font-family: 'EB Garamond', serif; font-size: 32px; font-weight: 400; line-height: 1.05; color: var(--p); }
+.perc-sub { font-size: 11px; line-height: 1.8; color: rgba(244,239,230,.35); margin-top: 14px; }
+.perc-r { padding: 56px 40px; background: var(--p); }
+.perc-item { display: grid; grid-template-columns: 72px 1fr; padding: 16px 0; border-bottom: .5px solid var(--pm); }
+.perc-anno { font-family: 'EB Garamond', serif; font-size: 14px; color: var(--a); padding-top: 2px; }
+.perc-ruolo { font-family: 'EB Garamond', serif; font-size: 18px; font-weight: 400; line-height: 1.05; }
+.perc-dove { font-size: 11px; color: rgba(23,18,15,.45); margin-top: 4px; line-height: 1.6; }
+
+/* ─── SERVIZI ─────────────────────────────────────────── */
+#servizi { background: var(--i); padding: 56px 40px; border-bottom: 1px solid rgba(244,239,230,.06); }
+.svc-nums {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 1px;
+  background: var(--im); margin-bottom: 36px;
+}
+.svc-num-item { background: rgba(23,18,15,.5); padding: 26px 22px; }
+.svc-num-n { font-family: 'EB Garamond', serif; font-size: 46px; color: var(--p); line-height: 1; }
+.svc-num-l { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: rgba(244,239,230,.3); margin-top: 7px; line-height: 1.5; }
+.svc-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--im); }
+.svc-card { background: rgba(23,18,15,.5); padding: 26px 24px; cursor: none; transition: background .15s; }
+.svc-card:hover { background: rgba(23,18,15,.75); }
+.svc-card-n { font-size: 10px; color: var(--a); margin-bottom: 11px; }
+.svc-card-nome { font-family: 'EB Garamond', serif; font-size: 22px; color: var(--p); font-weight: 400; line-height: 1.05; }
+.svc-card-desc { font-size: 11px; line-height: 1.75; color: rgba(244,239,230,.4); margin-top: 10px; }
+.svc-card-tag { display: inline-block; margin-top: 13px; font-size: 9px; letter-spacing: .09em; text-transform: uppercase; border: .5px solid rgba(184,92,42,.3); color: rgba(184,92,42,.7); padding: 3px 7px; }
+.speed-wrap { margin-top: 32px; }
+.speed-label { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--a); margin-bottom: 12px; }
+.speed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--im); }
+.speed-item { background: rgba(23,18,15,.5); padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; }
+.speed-n { font-family: 'EB Garamond', serif; font-size: 16px; color: var(--p); }
+.speed-g { font-family: 'EB Garamond', serif; font-size: 16px; color: rgba(244,239,230,.4); }
+
+/* ─── PROFILO ─────────────────────────────────────────── */
+#profilo { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--i); }
+.pro-l { padding: 56px 40px; border-right: 1px solid var(--pm); background: var(--p); }
+.pro-nome { font-family: 'EB Garamond', serif; font-size: clamp(36px,5vw,60px); font-weight: 400; line-height: .9; letter-spacing: -.02em; }
+.pro-tag { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--a); margin: 13px 0 24px; }
+.pro-bio { font-size: 13px; line-height: 1.85; color: rgba(23,18,15,.55); max-width: 400px; }
+.pro-bio strong { color: var(--i); font-weight: 400; }
+.str-head { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: rgba(23,18,15,.35); margin: 30px 0 11px; }
+.str-item { display: flex; align-items: baseline; gap: 12px; padding: 8px 0; border-top: .5px solid var(--pm); }
+.str-n { font-size: 10px; color: var(--a); width: 18px; }
+.str-v { font-family: 'EB Garamond', serif; font-size: 16px; }
+.str-d { font-size: 10px; color: rgba(23,18,15,.4); margin-top: 2px; }
+
+.pro-r { padding: 56px 40px; background: var(--p); }
+.pro-r-label { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: rgba(23,18,15,.35); margin-bottom: 13px; }
+.lingua { display: grid; grid-template-columns: 1fr 58px 108px; align-items: center; gap: 10px; padding: 10px 0; border-bottom: .5px solid var(--pm); }
+.lingua-n { font-family: 'EB Garamond', serif; font-size: 17px; }
+.lingua-l { font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--a); }
+.lingua-c { font-size: 10px; color: rgba(23,18,15,.4); }
+.cert { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: .5px solid var(--pm); }
+.cert-n { font-family: 'EB Garamond', serif; font-size: 15px; }
+.cert-b { font-size: 9px; letter-spacing: .07em; text-transform: uppercase; border: .5px solid var(--a); color: var(--a); padding: 2px 7px; }
+
+
+/* ─── CONTATTI ────────────────────────────────────────── */
+#contatti { background: var(--i); display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid rgba(244,239,230,.06); }
+.cont-l { padding: 56px 40px; border-right: 1px solid var(--im); }
+.cont-big { font-family: 'EB Garamond', serif; font-size: clamp(24px,3.5vw,46px); font-weight: 400; line-height: 1.1; color: var(--p); }
+.cont-big a { border-bottom: 1px solid rgba(184,92,42,.5); color: var(--p); transition: border-color .15s; }
+.cont-big a:hover { border-color: var(--a); }
+.cont-row { display: grid; grid-template-columns: 76px 1fr; gap: 10px; align-items: center; padding: 11px 0; border-bottom: .5px solid var(--im); }
+.cont-pl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: rgba(244,239,230,.25); }
+.cont-val { font-family: 'EB Garamond', serif; font-size: 15px; color: var(--p); }
+.cont-r { padding: 56px 40px; }
+.avail { border: 1px solid rgba(184,92,42,.3); padding: 26px; }
+.avail-label { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--a); margin-bottom: 11px; }
+.avail-title { font-family: 'EB Garamond', serif; font-size: 28px; font-weight: 400; line-height: 1.1; color: var(--p); }
+.avail-desc { font-size: 11px; color: rgba(244,239,230,.4); margin-top: 11px; line-height: 1.75; }
+.avail-sep { height: .5px; background: var(--im); margin: 18px 0; }
+.avail-row { display: flex; justify-content: space-between; padding: 8px 0; border-top: .5px solid var(--im); }
+.avail-sn { font-family: 'EB Garamond', serif; font-size: 15px; color: var(--p); }
+.avail-sg { font-family: 'EB Garamond', serif; font-size: 15px; color: rgba(244,239,230,.35); }
+.avail-cta { display: inline-block; margin-top: 22px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; border: 1px solid var(--a); padding: 10px 20px; color: var(--p); cursor: none; transition: background .15s; }
+.avail-cta:hover { background: var(--a); }
+
+/* ─── FOOTER ──────────────────────────────────────────── */
+footer {
+  background: var(--i); padding: 17px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid rgba(244,239,230,.05);
+}
+.foot-brand { display: flex; align-items: center; gap: 10px; }
+.foot-copy { font-size: 10px; color: rgba(244,239,230,.2); }
+.foot-ref { font-size: 10px; color: rgba(244,239,230,.15); letter-spacing: .05em; }
+
+/* ─── SCROLL REVEAL ───────────────────────────────────── */
+.rv { opacity: 0; transform: translateY(16px); transition: opacity .55s, transform .55s; }
+.rv.in { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+
+<!-- Logo — un solo template ──────────────────────────── -->
+<template id="logo-tpl">
+  <svg viewBox="0 0 24.2 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16.6338 0.703641C16.9027 0.112355 17.6144 -0.15964 18.2285 0.0962195C18.84 0.355498 19.1288 1.04759 18.8652 1.64212C18.8472 1.68285 18.8288 1.72372 18.8105 1.76419C18.3008 2.90544 17.8155 4.00034 17.3516 5.05716C21.4059 6.9481 24.2051 10.9621 24.2051 15.6099C24.2051 20.6872 20.865 25.009 16.1953 26.6324C16.627 26.9472 16.8027 27.515 16.5869 28.021C16.3316 28.6194 15.6252 28.9053 15.0059 28.6626C14.4434 28.4382 13.8697 28.1414 13.4072 27.6958C13.2746 27.568 13.1542 27.4304 13.0459 27.2837C12.7346 27.3069 12.4197 27.3189 12.1025 27.3189C11.4741 27.3189 10.8561 27.2727 10.2529 27.1831C9.25646 28.9862 8.44522 30.9545 7.51465 33.437L7.46777 33.563C7.24878 34.1488 6.59616 34.4674 5.97949 34.2915C5.91803 34.2736 5.85906 34.2513 5.80273 34.2251C5.38683 34.0318 5.11812 33.6264 5.10742 33.187C5.10502 33.0873 5.11619 32.9855 5.1416 32.8843L5.17188 32.7642C5.76595 30.404 6.34518 28.2383 6.92969 26.1978C2.83445 24.3217 9.43914e-06 20.2867 0 15.6099C0 11.6579 2.02432 8.1631 5.12207 6.04349C5.05414 5.6285 5.21857 5.19198 5.58887 4.92044C6.04572 4.58983 6.67158 4.61192 7.09473 4.94778C8.62138 4.27564 10.3175 3.90092 12.1025 3.90091C12.9935 3.90091 13.8631 3.99427 14.7002 4.17141C15.3983 3.14649 16.028 2.04988 16.5791 0.825712L16.6338 0.703641ZM18.0127 0.580595C17.6722 0.438771 17.2771 0.590257 17.1299 0.919462L17.0781 1.03567C16.458 2.4131 15.7412 3.6327 14.9424 4.76809C14.0338 4.54603 13.0824 4.42825 12.1025 4.42825C10.255 4.42825 8.50881 4.84758 6.95996 5.59329C6.92651 5.55101 6.89294 5.50819 6.85938 5.46536C6.63522 5.1793 6.2137 5.12359 5.91797 5.34036C5.62409 5.55586 5.565 5.95979 5.78418 6.24563C2.62938 8.24216 0.544922 11.6905 0.544922 15.6099C0.544932 20.2326 3.44463 24.1999 7.58008 25.9029C6.94472 28.0986 6.31703 30.4373 5.6709 33.0093C5.58665 33.3448 5.78815 33.685 6.12988 33.7847C6.47162 33.8843 6.83367 33.7081 6.95508 33.3833C7.96429 30.684 8.83951 28.5613 9.96094 26.6001C10.655 26.7259 11.3709 26.7915 12.1025 26.7915C12.516 26.7915 12.9249 26.771 13.3271 26.73C13.4527 26.948 13.6081 27.1446 13.792 27.3218C14.1831 27.6986 14.676 27.9608 15.2061 28.1724C15.5492 28.3093 15.9425 28.1518 16.084 27.8199C16.2255 27.488 16.0616 27.1083 15.7188 26.9712C15.3257 26.8145 15.038 26.6547 14.8281 26.479C19.896 25.2938 23.6601 20.8771 23.6602 15.6099C23.6602 10.9937 20.7689 7.03066 16.6426 5.32376C17.1696 4.11933 17.7247 2.86697 18.3115 1.55325C18.3293 1.51372 18.3466 1.47388 18.3643 1.43411C18.5104 1.10447 18.3532 0.722462 18.0127 0.580595ZM13.6895 21.5874C13.1289 23.2294 12.8716 24.4807 12.9521 25.4575C12.6721 25.4798 12.3885 25.4917 12.1025 25.4917C11.6244 25.4917 11.1539 25.4594 10.6934 25.398C11.5129 24.1345 12.4747 22.9043 13.6895 21.5874ZM16.1211 6.522C19.7643 8.03183 22.3164 11.5328 22.3164 15.6099C22.3164 20.3426 18.8775 24.298 14.2852 25.2652C14.2441 24.4873 14.4839 23.3024 15.167 21.4243C15.3791 20.8407 15.1019 20.299 14.6797 20.0337C14.25 19.7637 13.6088 19.7468 13.1582 20.2193C11.5249 21.9314 10.3055 23.4927 9.2959 25.1138C9.26886 25.1063 9.2418 25.099 9.21484 25.0913C10.1732 21.8713 11.1586 18.9419 12.2627 15.9898C14.1216 15.7286 16.4701 15.5328 19.416 15.4048C20.4083 15.3615 20.7113 13.9713 19.6855 13.6294C17.4995 12.9016 15.6822 12.2752 14.0312 11.4761C14.6788 9.88912 15.3713 8.25222 16.1211 6.522ZM12.5273 23.7671C12.2132 24.1648 11.9192 24.5589 11.6426 24.9536C11.795 24.9605 11.9484 24.9644 12.1025 24.9644C12.2001 24.9644 12.2976 24.9633 12.3945 24.9605C12.4035 24.5899 12.4487 24.1925 12.5273 23.7671ZM6.62012 7.27102C7.73693 8.58222 8.82658 9.62793 9.94434 10.4947L9.75586 10.688C9.04843 11.4157 8.3171 12.1693 7.57324 12.9634C7.32408 13.2295 7.34428 13.6403 7.61914 13.8814C7.89401 14.1224 8.31911 14.1022 8.56836 13.8365C9.3031 13.0521 10.0231 12.3111 10.7285 11.5855L11.0293 11.2759C11.4615 11.5638 11.8993 11.829 12.3447 12.0767C11.9737 13.0024 11.6176 13.9155 11.2725 14.8238C9.38977 15.1301 7.98366 15.5228 6.96777 16.023C5.86754 16.5648 5.17671 17.2582 4.87891 18.1382C4.76346 18.4794 4.95591 18.8468 5.30859 18.9585C5.66114 19.0699 6.04083 18.8836 6.15625 18.5425C6.31244 18.0813 6.6925 17.6167 7.57715 17.1812C8.29861 16.8259 9.32157 16.508 10.7432 16.2378C9.74094 18.9597 8.83298 21.6814 7.9502 24.6411C4.37848 23.1017 1.88868 19.637 1.88867 15.6099C1.88867 12.1044 3.77543 9.0252 6.62012 7.27102ZM16.4053 7.23001C15.8102 8.60967 15.2518 9.93087 14.7236 11.2163C16.2197 11.9003 17.874 12.4684 19.8623 13.1304C19.9234 13.153 19.9732 13.1715 20.0205 13.1929C20.6896 13.4947 20.945 14.14 20.8467 14.7095C20.838 14.7574 20.8291 14.7957 20.8193 14.8325C20.6918 15.3137 20.3085 15.7624 19.7256 15.895C19.6747 15.9065 19.6346 15.9139 19.5938 15.9195C19.5295 15.9261 19.4896 15.9292 19.4492 15.9312C19.1004 15.9464 18.76 15.9639 18.4277 15.981C16.5581 16.0769 14.9507 16.2019 13.5781 16.356C13.3578 16.3806 13.1788 16.4016 13.0039 16.4234C12.8889 16.4377 12.7755 16.4526 12.6641 16.4673C11.9561 18.373 11.2962 20.2738 10.6602 22.2544C11.1255 21.6698 11.6321 21.0797 12.1865 20.4741C12.3715 20.2722 12.5615 20.0676 12.7578 19.8618L12.7656 19.8531C13.4239 19.1709 14.3632 19.206 14.9766 19.5913L14.9902 19.6001C15.5836 19.9811 15.9823 20.7559 15.6846 21.5894L15.6807 21.5991C15.1888 22.9517 14.9446 23.9028 14.8604 24.5786C18.857 23.4302 21.7715 19.8488 21.7715 15.6099C21.7715 11.9398 19.5871 8.76214 16.4053 7.23001ZM6.51758 7.97317C4.04546 9.66853 2.43359 12.4572 2.43359 15.6099C2.43359 15.7201 2.43555 15.8298 2.43945 15.939C2.55871 19.2757 4.48391 22.1698 7.30078 23.732C7.32567 23.7458 7.35095 23.7593 7.37598 23.773C7.39406 23.7828 7.4125 23.7925 7.43066 23.8023C7.44156 23.8081 7.45294 23.8141 7.46387 23.8199C7.49958 23.8388 7.54019 23.8599 7.57617 23.8784C7.58654 23.8838 7.59704 23.8888 7.60742 23.8941C8.33964 21.4752 9.09261 19.2068 9.9043 16.9556C9.00883 17.1684 8.33705 17.4013 7.83984 17.6441L7.82422 17.6509C7.03361 18.0402 6.77634 18.4086 6.67578 18.6997C6.46668 19.3176 5.77724 19.6617 5.13867 19.4595C5.09359 19.4453 5.0499 19.4284 5.00781 19.4097C4.49984 19.1836 4.21674 18.6458 4.32324 18.1158C4.3328 18.0686 4.34547 18.021 4.36133 17.9741L4.36523 17.9615C4.7228 16.9179 5.53829 16.1355 6.7207 15.5533L6.74609 15.5406C7.77013 15.041 9.12939 14.6564 10.8701 14.356C11.1301 13.6759 11.3967 12.9926 11.6709 12.3033C11.483 12.1932 11.2961 12.0798 11.1104 11.9624C10.4316 12.6605 9.74274 13.3692 9.04102 14.1167L8.97266 14.19C8.96261 14.2007 8.95176 14.211 8.94141 14.2212C8.92612 14.2364 8.91046 14.2519 8.89453 14.2661C8.89119 14.2692 8.88815 14.2729 8.88477 14.2759C8.45131 14.6537 7.79568 14.6793 7.33105 14.3345C7.30887 14.3178 7.28101 14.2953 7.25977 14.2769C6.80628 13.8793 6.72975 13.2218 7.06055 12.7437C7.09288 12.697 7.12882 12.6518 7.16895 12.6089L7.23926 12.5347C7.88918 11.8424 8.52955 11.1813 9.14941 10.5435C8.2644 9.81427 7.39587 8.97016 6.51758 7.97317ZM13.54 12.6919C14.7223 13.2564 15.974 13.7346 17.335 14.2095C15.6014 14.3134 14.0944 14.4461 12.7881 14.6079C13.0324 13.9739 13.2826 13.3359 13.54 12.6919ZM13.6133 13.982C14.0193 13.9387 14.4424 13.8983 14.8828 13.8599C14.5283 13.7162 14.1799 13.5678 13.8369 13.4136C13.7618 13.6035 13.6872 13.7931 13.6133 13.982ZM13.9795 8.12161C13.5847 9.05209 13.2056 9.96001 12.8408 10.8521C12.5428 10.6823 12.2494 10.5036 11.959 10.315C12.6552 9.58883 13.331 8.86507 13.9795 8.12161ZM12.1025 5.72806C12.7818 5.72806 13.4457 5.79219 14.0879 5.91458C13.107 7.16341 12.025 8.33538 10.8652 9.54251C9.85444 8.76813 8.85684 7.82771 7.82227 6.63528C9.12413 6.05316 10.5742 5.72806 12.1025 5.72806ZM12.1025 6.2554C10.914 6.25541 9.77625 6.46245 8.72559 6.84134C8.78682 6.90792 8.84818 6.9738 8.90918 7.0386C9.38057 7.53951 9.84503 7.98838 10.3076 8.39407C10.4763 8.54198 10.645 8.68386 10.8135 8.82083C11.6162 7.97794 12.3741 7.1527 13.082 6.30325C12.76 6.27193 12.4333 6.2554 12.1025 6.2554Z" fill="currentColor"/>
+  </svg>
+</template>
+
+<!-- NAV ─────────────────────────────────────────────── -->
+<nav>
+  <a href="#hero" style="display:flex;align-items:center;gap:12px;color:var(--p)">
+    <span id="nl" style="width:16px;height:22px;display:flex;align-items:center"></span>
+    <span style="font-family:'EB Garamond',serif;font-size:16px">Adriano Parmentola</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#manifesto">Approccio</a></li>
+    <li><a href="#feature">hum.mus</a></li>
+    <li><a href="#progetti">Progetti</a></li>
+    <li><a href="#servizi">Servizi</a></li>
+    <li><a href="#profilo">Profilo</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('contatti').scrollIntoView({behavior:'smooth'})">Collabora →</button>
+</nav>
+
+<!-- HERO ─────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="h-l">
+    <div>
+      <div class="h-over">Service Designer · Bologna · AP.SD.001</div>
+      <h1 class="h-nome">Adriano<br><em>Parmentola</em></h1>
+      <p class="h-ruolo">Dal servizio in sala al service design. Progetto sistemi partendo dai principi che reggono una buona tavola — qualità, fiducia reciproca, formalità come base per la convivialità.</p>
+    </div>
+    <div class="h-bottom">
+      <div class="h-meta">
+        Bologna, Emilia-Romagna<br>
+        <b>Laurea Triennale in Design · 2022–2025</b><br>
+        <b>hum.mus · Six Sigma · Human Centered Design</b>
+      </div>
+      <div class="h-scroll">↓ Scorri</div>
+    </div>
+  </div>
+  <div class="h-r">
+    <div id="hl" style="color:var(--p);filter:drop-shadow(0 0 48px rgba(184,92,42,.3))"></div>
+  </div>
+</section>
+
+<!-- APPROCCIO ────────────────────────────────────────── -->
+<div class="sh" id="manifesto">
+  <span class="sh-n">00</span><span class="sh-t">Approccio</span>
+  <span class="sh-l"></span><span class="sh-s">Cultura del servizio · Design</span>
+</div>
+<section id="manifesto-body" style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--i)">
+  <div class="m-l rv">
+    <div class="m-label">Dal servizio alla progettazione</div>
+    <p class="m-testo">L'approccio al cibo che la cultura italiana — soprattutto <em>meridionale</em> — mi ha donato è lo stesso che porto nel design.</p>
+  </div>
+  <div class="m-r rv">
+    <p class="m-en">Preference for quality, mutual trust between suppliers and clients, formality as the foundation for spontaneous human relationships. Not composure as a goal — principles that enable collective wellbeing and conviviality. This is the foundation of my design practice, from the first job behind a bar to the hum.mus thesis.</p>
+  </div>
+</section>
+
+<!-- HUM.US ───────────────────────────────────────────── -->
+<div class="sh" id="feature">
+  <span class="sh-n">01</span><span class="sh-t">Progetto manifesto</span>
+  <span class="sh-l"></span><span class="sh-s">Tesi Triennale · 2022–2025 · Six Sigma</span>
+</div>
+<section id="feature-body" style="background:var(--i);display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(244,239,230,.06)">
+  <div class="f-img rv">
+    <div class="f-img-txt">
+      <div class="f-img-t">hum.</div>
+      <div class="f-img-t"><span>mus</span></div>
+      <div class="f-img-sub">Bononia · 2024–2025</div>
+    </div>
+  </div>
+  <div class="f-body rv">
+    <div>
+      <div class="f-label">Tesi di Laurea Triennale · Service Design · Ristorazione</div>
+      <h2 class="f-title">hum.<em>mus</em></h2>
+      <p class="f-desc">Collaborazione con la prima catena di ristorazione per studenti a Bologna nella sede Hum.us Bononia. Riprogettazione del servizio sulla base di un'analisi quantitativa e qualitativa approfondita. Applicazione della tecnica Six Sigma alla progettazione. Una provocazione nei confronti di un sistema decisionale non più fondato sul servizio ma sul guadagno economico.</p>
+      <div class="f-tags">
+        <span class="f-tag">#SixSigma</span><span class="f-tag">#ServiceDesign</span>
+        <span class="f-tag">#FoodInnovation</span><span class="f-tag">#DataDriven</span>
+      </div>
+    </div>
+    <div class="f-kpi">
+      <div class="kpi"><div class="kn">5</div><div class="kl">Introduzioni di servizio mirate implementate</div></div>
+      <div class="kpi"><div class="kn">6σ</div><div class="kl">Metodo statistico applicato al servizio</div></div>
+      <div class="kpi"><div class="kn">D·M·A·I·C</div><div class="kl">Fasi del processo Six Sigma seguite</div></div>
+      <div class="kpi"><div class="kn">∞</div><div class="kl">Il servizio prima del profitto</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGETTI ─────────────────────────────────────────── -->
+<div class="sh" id="progetti">
+  <span class="sh-n">02</span><span class="sh-t">Progetti</span>
+  <span class="sh-l"></span><span class="sh-s">Prodotto · Servizio · HCD</span>
+</div>
+<section class="proj-grid">
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c1"></div><div class="proj-anno">2021</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Prodotto · Visual</div>
+      <div class="proj-nome">Araldica</div>
+      <div class="proj-desc">Stendardo pubblicitario in vetro per spazi storici. La storia come ingrediente del contemporaneo.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#VisualCom</span><span class="ptag">#Installation</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c2"></div><div class="proj-anno">2022</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Prodotto · Circolare</div>
+      <div class="proj-nome">On the Corner</div>
+      <div class="proj-desc">Lampada flat-pack in cartone riciclato. Zero sprechi, come in una cucina che rispetta la materia prima.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#FlatPack</span><span class="ptag">#CircularDes</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c3"></div><div class="proj-anno">2022</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Prodotto · Healthcare</div>
+      <div class="proj-nome">Vaee</div>
+      <div class="proj-desc">Wearable utility gadget per la cura personale. Il corpo come contesto di progetto.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#Cosmetics</span><span class="ptag">#Utility</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c4"></div><div class="proj-anno">2023</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Prodotto · HCD · Healthcare</div>
+      <div class="proj-nome">Autonomia</div>
+      <div class="proj-desc">Human Centered Design for healthcare. Prodotto da cucina per anziani con complicazioni visive o muscolari.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#HCD</span><span class="ptag">#Healthcare</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c5"></div><div class="proj-anno">2023</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Servizio · Mobilità</div>
+      <div class="proj-nome">Linea Dotta</div>
+      <div class="proj-desc">Mobilità invisibile a Bologna. Alternativa al trasporto su gomma per l'ultimo miglio urbano.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#LastMile</span><span class="ptag">#MicroMobility</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+  <div class="proj rv">
+    <div class="proj-thumb"><div class="proj-chip" id="c6"></div><div class="proj-anno">2025</div></div>
+    <div class="proj-body">
+      <div class="proj-cat">Servizio · B2B</div>
+      <div class="proj-nome">Safe2Work</div>
+      <div class="proj-desc">La prima rete di mobilità aziendale data-driven per una transizione conveniente.</div>
+      <div class="proj-foot"><div class="proj-tags"><span class="ptag">#DataDriven</span><span class="ptag">#FleetMgmt</span></div><span class="proj-arr">→</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PERCORSO ─────────────────────────────────────────── -->
+<div class="sh">
+  <span class="sh-n">03</span><span class="sh-t">Percorso</span>
+  <span class="sh-l"></span><span class="sh-s">Dal bancone alla laurea</span>
+</div>
+<section id="percorso">
+  <div class="perc-l rv">
+    <h2 class="perc-titolo">Una rotta cominciata da piccolo</h2>
+    <p class="perc-sub">Barista, cameriere, progettista di servizi e prodotti. Ogni ruolo ha lasciato un ingrediente.</p>
+  </div>
+  <div class="perc-r">
+    <div class="perc-item rv"><span class="perc-anno">Inizio</span><div><div class="perc-ruolo">Barista · Cameriere</div><div class="perc-dove">Primo contatto con il servizio come sistema. Relazione con il cliente, fiducia, qualità come abitudine.</div></div></div>
+    <div class="perc-item rv"><span class="perc-anno">2021</span><div><div class="perc-ruolo">Designer — Araldica, On the Corner, Vaee</div><div class="perc-dove">Primi progetti di prodotto. Materiali, circolarità, utilità.</div></div></div>
+    <div class="perc-item rv"><span class="perc-anno">2022</span><div><div class="perc-ruolo">Laurea Triennale in Design — inizio</div><div class="perc-dove">Percorso accademico che formalizza la pratica. HCD, Service Design, metodologie di ricerca.</div></div></div>
+    <div class="perc-item rv"><span class="perc-anno">2023</span><div><div class="perc-ruolo">Service Designer — Linea Dotta, Autonomia</div><div class="perc-dove">Il salto di scala: dal prodotto al sistema. Mobilità urbana e HCD per healthcare.</div></div></div>
+    <div class="perc-item rv"><span class="perc-anno">2024–25</span><div><div class="perc-ruolo">Tesi — hum.mus · Bononia · Laurea</div><div class="perc-dove">Il progetto manifesto. Six Sigma applicato alla ristorazione studentesca. Laurea conseguita 2025.</div></div></div>
+    <div class="perc-item rv"><span class="perc-anno">2025+</span><div><div class="perc-ruolo">Designer — Safe2Work e nuovi progetti</div><div class="perc-dove">Mobilità aziendale, community design. La pratica continua.</div></div></div>
+  </div>
+</section>
+
+<!-- SERVIZI ──────────────────────────────────────────── -->
+<div class="sh" id="servizi">
+  <span class="sh-n">04</span><span class="sh-t">Servizi</span>
+  <span class="sh-l"></span><span class="sh-s">Cosa progetto · Tempi</span>
+</div>
+<section style="background:var(--i);padding:56px 40px;border-bottom:1px solid rgba(244,239,230,.06)">
+  <div class="svc-nums rv">
+    <div class="svc-num-item"><div class="svc-num-n">7+</div><div class="svc-num-l">Anni di rapporto<br>con il servizio</div></div>
+    <div class="svc-num-item"><div class="svc-num-n">7</div><div class="svc-num-l">Progetti completati<br>tra prodotto e servizio</div></div>
+    <div class="svc-num-item"><div class="svc-num-n">C1</div><div class="svc-num-l">Inglese certificato<br>ESOL Cambridge</div></div>
+  </div>
+  <div class="svc-cards rv">
+    <div class="svc-card"><div class="svc-card-n">01</div><div class="svc-card-nome">Service Design</div><div class="svc-card-desc">Ricerca, mappatura e riprogettazione di servizi complessi. Six Sigma per decisioni fondate sui dati.</div><span class="svc-card-tag">Sistemico</span></div>
+    <div class="svc-card"><div class="svc-card-n">02</div><div class="svc-card-nome">Product Design</div><div class="svc-card-desc">Prodotti fisici con attenzione alla circolarità, all'uso, alla relazione tra oggetto e corpo.</div><span class="svc-card-tag">Fisico</span></div>
+    <div class="svc-card"><div class="svc-card-n">03</div><div class="svc-card-nome">Brand Identity</div><div class="svc-card-desc">Sistemi di identità modulari. La forma come conseguenza dei principi, non come ornamento.</div><span class="svc-card-tag">Visuale</span></div>
+    <div class="svc-card"><div class="svc-card-n">04</div><div class="svc-card-nome">Interiors · Spazi Commerciali</div><div class="svc-card-desc">Progettazione rapida di installazioni e arredo per spazi commerciali.</div><span class="svc-card-tag">Spaziale</span></div>
+  </div>
+  <div class="speed-wrap rv">
+    <div class="speed-label">Speed Tasks — tempi garantiti</div>
+    <div class="speed-grid">
+      <div class="speed-item"><span class="speed-n">Interiors design</span><span class="speed-g">7 giorni</span></div>
+      <div class="speed-item"><span class="speed-n">Identità e campagne</span><span class="speed-g">12 giorni</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFILO ──────────────────────────────────────────── -->
+<div class="sh" id="profilo">
+  <span class="sh-n">05</span><span class="sh-t">Profilo</span>
+  <span class="sh-l"></span><span class="sh-s">Chi sono · Lingue · Certificazioni</span>
+</div>
+<section style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--i)">
+  <div class="pro-l rv">
+    <h2 class="pro-nome">Adriano<br>Parmentola</h2>
+    <div class="pro-tag">Service Designer · Bologna, Emilia-Romagna</div>
+    <p class="pro-bio">Cresciuto tra il bancone del bar e la sala di un ristorante, ho imparato che <strong>il servizio è una forma di cura</strong>. Quella stessa cura la porto nel design.<br><br>La mia <strong>laurea triennale in Design (2022–2025)</strong> segna l'inizio formale di una rotta già tracciata. Dal rapporto con il servizio alla progettazione dei servizi: barista, cameriere, poi designer di prodotti per la cucina accessibile e di sistemi per la ristorazione.<br><br>L'obiettivo è riportare nel design la preferenza per la qualità, la fiducia reciproca, e la <strong>formalità come base per la convivialità</strong>.</p>
+    <div class="str-head">Gallup CliftonStrengths</div>
+    <div class="str-item"><span class="str-n">01</span><div><div class="str-v">Input</div><div class="str-d">Raccogliere, connettere, portare in tavola</div></div></div>
+    <div class="str-item"><span class="str-n">02</span><div><div class="str-v">Positivity</div><div class="str-d">L'energia che rende possibile il gruppo</div></div></div>
+    <div class="str-item"><span class="str-n">03</span><div><div class="str-v">Includer</div><div class="str-d">Nessuno fuori dalla tavola</div></div></div>
+    <div class="str-item"><span class="str-n">04</span><div><div class="str-v">Arranger</div><div class="str-d">Orchestrare complessità con naturalezza</div></div></div>
+    <div class="str-item"><span class="str-n">05</span><div><div class="str-v">Woo</div><div class="str-d">Creare connessioni dove non esistevano</div></div></div>
+  </div>
+  <div class="pro-r rv">
+    <div class="pro-r-label">Lingue</div>
+    <div class="lingua"><span class="lingua-n">Italiano</span><span class="lingua-l">Madrelingua</span><span class="lingua-c">—</span></div>
+    <div class="lingua"><span class="lingua-n">Inglese</span><span class="lingua-l">C1</span><span class="lingua-c">ESOL Cambridge</span></div>
+    <div class="lingua"><span class="lingua-n">Francese</span><span class="lingua-l">A2</span><span class="lingua-c">Certificazione Statale</span></div>
+    <div class="lingua"><span class="lingua-n">Spagnolo</span><span class="lingua-l">A2</span><span class="lingua-c">—</span></div>
+    <div class="pro-r-label" style="margin-top:32px">Certificazioni</div>
+    <div class="cert"><span class="cert-n">Gallup CliftonStrengths</span><span class="cert-b">Certified</span></div>
+    <div class="cert"><span class="cert-n">ESOL Cambridge C1</span><span class="cert-b">Certified</span></div>
+
+  </div>
+</section>
+
+<!-- CONTATTI ─────────────────────────────────────────── -->
+<div class="sh" id="contatti">
+  <span class="sh-n">06</span><span class="sh-t">Contatti</span>
+  <span class="sh-l"></span><span class="sh-s">Disponibile per nuovi progetti</span>
+</div>
+<section style="background:var(--i);display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid rgba(244,239,230,.06)">
+  <div class="cont-l rv">
+    <p class="cont-big"><a href="mailto:adrianoparmentola03@gmail.com">adrianoparmentola03@gmail.com</a></p>
+    <div style="margin-top:28px">
+      <div class="cont-row"><span class="cont-pl">Telefono</span><span class="cont-val">+39 366 291 1928</span></div>
+      <div class="cont-row"><span class="cont-pl">Instagram</span><span class="cont-val">@adriano_parmentola</span></div>
+      <div class="cont-row"><span class="cont-pl">LinkedIn</span><span class="cont-val">@adrianoparmentola</span></div>
+      <div class="cont-row"><span class="cont-pl">Behance</span><span class="cont-val">@adrianoparmento</span></div>
+    </div>
+  </div>
+  <div class="cont-r rv">
+    <div class="avail">
+      <div class="avail-label">Disponibilità</div>
+      <h3 class="avail-title">Aperto a nuovi progetti</h3>
+      <p class="avail-desc">Service design, product design, brand identity. Speed tasks attivi. Collaborazioni con aziende, istituzioni e studi.</p>
+      <div class="avail-sep"></div>
+      <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--a);margin-bottom:10px">Speed Tasks</div>
+      <div class="avail-row"><span class="avail-sn">Interiors design</span><span class="avail-sg">7 gg</span></div>
+      <div class="avail-row"><span class="avail-sn">Identità e campagne</span><span class="avail-sg">12 gg</span></div>
+      <a href="mailto:adrianoparmentola03@gmail.com" class="avail-cta">Scrivimi →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER ───────────────────────────────────────────── -->
+<footer>
+  <div class="foot-brand">
+    <span id="fl" style="width:12px;height:17px;display:flex;align-items:center;color:rgba(244,239,230,.2)"></span>
+    <span class="foot-copy">Adriano Parmentola — Service Designer · Bologna, IT</span>
+  </div>
+  <span class="foot-ref">AP.SD.001 · Laurea Triennale 2022–2025</span>
+</footer>
+
+<script>
+function logo(w, h, color) {
+  const svg = document.getElementById('logo-tpl').content.cloneNode(true).querySelector('svg');
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  svg.style.color = color;
+  return svg;
+}
+document.getElementById('nl').appendChild(logo(16, 22, '#F4EFE6'));
+document.getElementById('hl').appendChild(logo(108, 155, '#F4EFE6'));
+['c1','c2','c3','c4','c5','c6'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.appendChild(logo(38, 54, '#17120F'));
+});
+document.getElementById('fl').appendChild(logo(12, 17, 'rgba(244,239,230,.2)'));
+
+const cur = document.getElementById('cur');
+document.addEventListener('mousemove', e => {
+  cur.style.left = (e.clientX - 4) + 'px';
+  cur.style.top  = (e.clientY - 4) + 'px';
+});
+document.querySelectorAll('a, button, .proj, .svc-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('big'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+});
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.rv').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
